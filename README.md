@@ -5,6 +5,8 @@ database and notifies subscribers in real-time to changes they are interested in
 instance, Blair only wants to track changes made to Chuck's whereabouts while Georgina
 wants to track everything about everyone.
 
+Read the wiki for [write-up](https://github.com/iambala/GossipGirl/wiki/Answering-the-%22Why%22)
+
 ## System requirements
 1. MongoDB **3.6** 
 2. NodeJS 8.11.1
