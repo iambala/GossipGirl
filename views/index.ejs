@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gossip Girl</title>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+
+<script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+	<div id = "alerts"></div>
+	<h1>Gossip Girl</h1>
+	<br>
+	<br>
+	<br>
+	<form class="form-inline">
+		<label for="avlPeople">Fields</label>
+		<select class="form-control" id="avlPeople" name="avlPeople">
+			<option value ="everyone" selected>Everyone</option>
+			<% for(var i=0; i<people.length; i++) {%>
+				<option value="<%= people[i]._id %>"><%= people[i].emailId %></option>
+			<% } %>
+		</select>
+
+		<label for="avlFields">Fields</label>
+		<select class="form-control" id="avlFields" name="avlFields">
+			<option value ="everything" selected>Every field</option>
+			<option value ="gender">Gender</option>
+			<option value="age">Age</option>
+			<option value="firstName">Name</option>
+			<option value="favColor">Color</option>
+		</select>
+
+		<button id="subscribe" type="button" class="btn btn-primary mb-2">Subscribe</button>
+	</form>
+	<br>
+	<br>
+	<br>
+
+	<form class="form-inline" action="/gossipstore" method="POST" role="form">
+		<label for="firstName">Name</label>
+		<input type="text" class="form-control" id="firstName" name="firstName" placeholder="Jane Doe">
+
+		<label for="emailId">Email address</label>
+		<input type="email" class="form-control" id="emailId" name="emailId" aria-describedby="emailHelp" placeholder="Enter email">
+
+		<label for="gender">Gender</label>
+		<select class="form-control" id="gender">
+			<option value ="1" selected>Male</option>
+			<option value="0">Female</option>
+		</select>
+
+		<label for="age">Age</label>
+		<input type="number" class="form-control" id="age" name="age" placeholder="Age">
+
+		<label for="favColor">Favorite color</label>
+		<input class="form-control" type="color" value="#563d7c" id="favColor" name="favColor">
+
+		<button type="submit" class="btn btn-primary mb-2">Insert new user</button>
+	</form>
+	<br>
+	<br>
+	<br>
+
+	<form class="form-inline" action="/gossipupdate" method="POST" role="form">
+		<label for="firstName">Name</label>
+		<input type="text" class="form-control" id="updatefirstName" name="firstName" placeholder="Jane Doe">
+
+		<label for="emailId">Email address</label>
+		<input type="email" class="form-control" id="updateemailId" name="emailId" aria-describedby="emailHelp" placeholder="Enter email">
+
+		<label for="gender">Gender</label>
+		<select class="form-control" id="updategender">
+			<option value ="1" selected>Male</option>
+			<option value="0">Female</option>
+		</select>
+
+		<label for="age">Age</label>
+		<input type="number" class="form-control" id="updateage" name="age" placeholder="Age">
+
+		<label for="favColor">Favorite color</label>
+		<input class="form-control" type="color" value="#563d7c" id="updatefavColor" name="favColor">
+
+		<button id="update" type="button" class="btn btn-primary mb-2">Update user</button>
+	</form>
+
+</body>
+<script>
+	//Intializing socket.io
+	var socket = io() 
+	$(() => {
+		//Event handler for subscribe button which then listens for socket events
+		$("#subscribe").click(() => {
+			var listenTo =  $("#avlPeople").val() + $("#avlFields").val();
+			//socket event callback and callback binding
+			socket.on(listenTo, changeDetected);
+			
+			//Alert user once he subscribes for a gossip
+			$('#alerts').html('<div class="alert alert-success alert-dismissible fade in">  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Subscription successful!</strong></div>');	
+	})
+		
+		//Event handler for update button which then posts the data using JQuery post
+		$("#update").click(() => {
+			//Building the JSON objects for posting to the server
+			var updateJSON = {
+			firstName: $("#updatefirstName").val(), emailId: $("#updateemailId").val(), gender: $("#updategender").val(), age: $("#updateage").val(), favColor: $("#updatefavColor").val()
+			}
+
+			//JQuery post for updating the data
+			$.post("/gossipupdate", updateJSON);
+		})
+	})
+
+	//Whenever a registered socket event is triggered, the user is alerted about the new changes for their subscription.
+	function changeDetected(message){
+		$('#alerts').html('<div class="alert alert-success alert-dismissible fade in">  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>'+message["documentKey"]["_id"]+' is changed!</strong></div>')	
+	}
+
+</script>
+</html>
